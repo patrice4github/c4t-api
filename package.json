@@ -1,0 +1,30 @@
+{
+  "watch": {
+    "start": "*.js"
+  },
+  "scripts": {
+    "start": "node api.js",
+    "watch": "npm-watch"
+  },
+  "name": "c4t_API",
+  "version": "0.0.1",
+  "description": "c4t API",
+  "main": "api.js",
+  "dependencies": {
+    "async": "^2.5.0",
+    "body-parser": "^1.18.2",
+    "cron": "^1.3.0",
+    "dotenv": "^4.0.0",
+    "express": "^4.16.2",
+    "express-session": "^1.15.6",
+    "moment": "^2.19.1",
+    "mysql": "^2.15.0",
+    "mysql2": "^1.4.2",
+    "node-django-hashers": "^1.0.9",
+    "nodemon": "^1.17.3",
+    "request": "^2.83.0",
+    "sequelize": "^4.14.0",
+    "socket.io": "^2.0.3",
+    "twilio": "^3.11.0"
+  }
+}
