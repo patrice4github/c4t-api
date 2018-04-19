@@ -114,6 +114,10 @@ var cars = db.define('quotecar', {
         type: sequelize.INTEGER(11),
         allowNull: true
     },
+    distance: {
+        type: sequelize.DECIMAL,
+        allowNull: true,
+    },
     dateBooked: {
         type: sequelize.DATE,
         allowNull: true
