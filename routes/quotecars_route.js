@@ -13,8 +13,9 @@ const Op = db.Op;
 
 module.exports = function(app, oauth) {
 
-  //Returned all cars.
-  app.get('/quotes/cars', [oauth], (req, res) => {
+  // Returned all cars.
+  // Can't do later, for performance...
+  app.get('/quotescars', [oauth], (req, res) => {
       cars.findAll({
           include: [{
               model: vehiclesinfo, as: 'information'
@@ -35,7 +36,7 @@ module.exports = function(app, oauth) {
       });
   })
 
-  .get('/quotes/cars/:quoteNo', [oauth], (req, res) => {
+  .get('/quotes/:quoteNo/cars', [oauth], (req, res) => {
       cars.findAll({
           where: {
               idQuote: req.params.quoteNo
