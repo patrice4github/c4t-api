@@ -11,6 +11,7 @@ var qs = require("querystring");
 module.exports = function(app, oauth) {
     //Add an address to customer.
     app.post("/clients/:no/address", [oauth], (req, res) => {
+        console.log("####--- In Address Route JS ---###",req,addresses);
         if(!req.body.address ||
         !req.body.city ||
         !req.body.postal ||
@@ -42,16 +43,26 @@ module.exports = function(app, oauth) {
                             if(!customer) {
                                 res.json({"error":"Client not found"});
                             } else {
-                                address.create({
+                    async.each(req.body.addresses, (address, next) => {
+                         address.create({
                                     idClient: req.params.no,
                                     address: addressComponents.street_number + " " + addressComponents.route,
                                     city: addressComponents.locality,
                                     postal: addressComponents.postal_code,
                                     province: addressComponents.administrative_area_level_1,
                                     distance: Number(going) + Number(returning)
-                                }).then(newAddress => {
+                            }).then(newAddress => {
                                     res.json(newAddress);
                                 });
+                        }, function() {
+                            client.findById(req.params.no, {
+                                include: [{
+                                    model: address, as: "addresses"
+                                }]
+                            }).then(client => {
+                                res.json(addresses);
+                            });
+                        });
                             }
                         });
                     });
