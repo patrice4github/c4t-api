@@ -9,10 +9,16 @@ var request = require("../tools/request");
 var qs = require("querystring");
 
 module.exports = function(app, oauth) {
+<<<<<<< HEAD
     //Add an address to customer.
     app.post("/clients/:no/address", [oauth], (req, res) => {
         console.log("####--- In Address Route JS ---###",req,addresses);
         if(!req.body.address ||
+=======
+  // Add an address to customer.
+  app.post("/clients/:no/address", [oauth], (req, res) => {
+      if (!req.body.address ||
+>>>>>>> 70420407a15ff1b18ca785bb2f4a36be639c2d74
         !req.body.city ||
         !req.body.postal ||
         !req.body.province) {
