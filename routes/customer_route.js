@@ -5,7 +5,7 @@ var clients = require('../models/customer');
 var HeardOfUs = require("../models/heardofus");
 var business = require('../models/business');
 var contact = require("../models/contact");
-var address = require('../models/address');
+var Address = require('../models/address');
 var users = require('../models/user');
 var db = require('../tools/db');
 const Op = db.Op;
@@ -19,6 +19,7 @@ module.exports = function(app, oauth) {
     //Create a customer
     app.post('/clients', [oauth], (req, res) => {
         //Validate body data before insert.
+        console.log("### About to Save Client");
         if(!req.body.firstName ||
            req.body.lastName == null ||
            req.body.email == null ||
@@ -99,18 +100,18 @@ module.exports = function(app, oauth) {
                         }
                     }).spread((client, created) => {
                         if(created) {
-                            console.log("---------------------------------------- distance")
-                            console.log(distance);
-                            address.create({
+                        async.each(req.body.addresses, (address, next) => {
+                            console.log("ADDRESS ADDING :: ",address.address);
+                            Address.create({
                                 idClient: client.id,
                                 // address: addressComponents.street_number + " " + addressComponents.route,
                                 // city: addressComponents.locality,
                                 // postal: addressComponents.postal_code,
                                 // province: addressComponents.administrative_area_level_1,
-                                address: req.body.address,
-                                city: req.body.city,
-                                postal: req.body.postal,
-                                province: req.body.province.toUpperCase(),
+                                address: address.address,
+                                city: address.city,
+                                postal: address.postal,
+                                province: address.province.toUpperCase(),
                                 distance: Number(distance.rows[0].elements[1].distance.value) + Number(distance.rows[1].elements[0].distance.value)
                             }).then(newAddress => {
                                 client.address = newAddress;
@@ -133,6 +134,7 @@ module.exports = function(app, oauth) {
                                     res.json(client);
                                 }
                             });
+                        });
                         } else {
                             res.json({"error":"Phone Number already exist."});
                         }
@@ -144,6 +146,7 @@ module.exports = function(app, oauth) {
 
     // get all customers with filter
     .get('/clients', [oauth], (req, res) => {
+        console.log("LIST OF Clients")
         var offset = 0;
         var filter = "%";
         if(typeof req.body.offset != 'undefined' && Number.isInteger(Number(req.body.offset))) {
@@ -187,7 +190,7 @@ module.exports = function(app, oauth) {
         .then(function(lstClients) {
             var lst = [];
             async.each(lstClients, function(client, next) {
-                address.findOne({
+                Address.find({
                     where: {
                         idClient: client.id
                     }
@@ -261,7 +264,7 @@ module.exports = function(app, oauth) {
             if(!client) {
                 res.json({"error": "Client not found!"});
             } else {
-                address.findOne({
+                Address.findOne({
                     where: {
                         idClient: client.id
                     }
@@ -275,6 +278,7 @@ module.exports = function(app, oauth) {
 
     // get one customer
     .get('/clients/:no', [oauth], (req, res) => {
+         console.log('Edit Screen API');
         clients.findOne({
             where: { id: req.params.no },
             include: [{
@@ -291,7 +295,7 @@ module.exports = function(app, oauth) {
             if(!client) {
                 res.json({"error": "Client not found!"});
             } else {
-                address.findOne({
+                Address.findAll({
                     where: {
                         idClient: client.id
                     }
@@ -331,13 +335,16 @@ module.exports = function(app, oauth) {
                 if(!clientNote) {
                     res.json({"error": "Customer not found!"});
                 } else {
+                    console.log("Role:---------",req.user.roles);
                     //Not admin can't edit previous notes. He can only add after.
                     if(req.user.roles != "admin"){
                         req.body.type = clientNote.type + "<br>" + req.body.type.replace(clientNote.type, "");;
                     }
 
-                    var formatted_address = req.body.address + " " + req.body.city + ", " + req.body.province.toUpperCase() + ", " + req.body.postal;
+                    
 
+                    var formatted_address = req.body.address + " " + req.body.city + ", " + req.body.province.toUpperCase() + ", " + req.body.postal;
+                    console.log("formatted_address:---------",formatted_address);
                     //Calculate distance with google map.
                     var twoAddress = "7628 Flewellyn Rd Stittsville, ON, K2S 1B6|" + formatted_address;
                     var url = "https://maps.googleapis.com/maps/api/distancematrix/json?key=" + process.env.GOOGLE_MAP_TOKEN +
@@ -347,6 +354,7 @@ module.exports = function(app, oauth) {
                     });
 
                     request.custom("GET", url, {}, {}, distance => {
+                        console.log(distance);
                         var customDollarCar = 0;
                         var customDollarSteel = 0;
                         var customPercCar = 0;
@@ -390,24 +398,46 @@ module.exports = function(app, oauth) {
                             {
                                 where: {id: req.params.no }
                             }).then((client) => {
-                                address.upsert({
+                                
+                        var hasError = false;
+                        req.body.addresses.forEach(address => {
+                            if(!hasError &&
+                            (!address.address ||
+                            !address.city ||
+                            !address.postal ||
+                            !address.province)) {
+                                res.status(400);
+                                res.json({"error":"Please send all require attributes."});
+                                hasError = true;
+                            }
+                        });
+                        if(hasError) {
+                            return;
+                        }
+                            
+                        async.each(req.body.addresses, (address, next) => {
+                            if(address.idAddress==''){
+                                Address.upsert({
                                     idClient: req.params.no,
-                                    address: req.body.address,
-                                    city: req.body.city,
-                                    postal: req.body.postal,
-                                    province: req.body.province.toUpperCase(),
+                                    address: address.address,
+                                    city: address.city,
+                                    postal: address.postal,
+                                    province: address.province.toUpperCase(),
                                     // address: addressComponents.street_number + " " + addressComponents.route,
                                     // city: addressComponents.locality,
                                     // postal: addressComponents.postal_code,
                                     // province: addressComponents.administrative_area_level_1,
-                                    distance: Number(distance.rows[0].elements[1].distance.value) + Number(distance.rows[1].elements[0].distance.value)
-                                },{
+                                
+                                   distance: Number(distance.rows[0].elements[1].distance.value) + Number(distance.rows[1].elements[0].distance.value)
+                            },{
                                     where: {
-                                        idClient: req.params.no,
-                                        address: req.body.address,
-                                        city: req.body.city,
-                                        postal: req.body.postal,
-                                        province: req.body.province.toUpperCase(),
+                                    idClient: req.params.no,
+                                    address: address.address,
+                                    city: address.city,
+                                    postal: address.postal,
+                                    province: address.province.toUpperCase(),
+                                    idAddress: address.idAddress,
+                                    distance: Number(distance.rows[0].elements[1].distance.value) + Number(distance.rows[1].elements[0].distance.value)
                                         // address: addressComponents.street_number + " " + addressComponents.route,
                                         // city: addressComponents.locality,
                                         // postal: addressComponents.postal_code,
@@ -448,6 +478,60 @@ module.exports = function(app, oauth) {
                                         });
                                     }
                                 });
+                            }else{
+
+                                //console.log("IS distance :: ",distance.rows[0].elements[1].distance||0);
+                                //var distanceValueOne = distance.rows[0].elements[1].distance||0;
+                                 //var distanceValue = distance.rows[0].elements[0].distance||0;
+                                Address.update({
+                                    idClient: req.params.no,
+                                    address: address.address,
+                                    city: address.city,
+                                    postal: address.postal,
+                                    province: address.province.toUpperCase(),
+                                    //distance: Number(distance.rows[0].elements[1].distance||0) + Number(distance.rows[1].elements[0].distance||0)
+                            },{
+                                where: {
+                                    idAddress: address.idAddress
+                                }
+                            }).then(updatedAddress => {
+                                    if(req.body.type != "Individual") {
+                                        business.upsert({
+                                            id: req.params.no,
+                                            name: req.body.name,
+                                            description: req.body.description,
+                                            contactPosition: req.body.contactPosition,
+                                            pstTaxNo: req.body.pstTaxNo,
+                                            gstTaxNo: req.body.gstTaxNo
+                                        }).then(busi => {
+                                            clients.findById(req.params.no).then(updatedClient => {
+                                                updatedClient.dataValues.business = busi.dataValues;
+                                                updatedClient.dataValues.address = updatedAddress.dataValues;
+                                                res.send(updatedClient);
+                                            });
+                                        });
+                                    } else {
+                                        contact.destroy({
+                                            where: {
+                                                idBusiness: req.params.no
+                                            }
+                                        }).then(r_ => {
+                                            business.destroy({
+                                                where: {
+                                                    id: req.params.no
+                                                }
+                                            }).then((businessDestoyed) => {
+                                                clients.findById(req.params.no).then(updatedClient => {
+                                                    updatedClient.dataValues.address = updatedAddress.dataValues;
+                                                    res.send(updatedClient);
+                                                });
+                                            });
+                                        });
+                                    }
+                                });
+
+                        }
+                            });
                             });
                         });
                     });

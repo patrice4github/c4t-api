@@ -9,9 +9,10 @@ var request = require("../tools/request");
 var qs = require("querystring");
 
 module.exports = function(app, oauth) {
-  // Add an address to customer.
-  app.post("/clients/:no/address", [oauth], (req, res) => {
-      if (!req.body.address ||
+    //Add an address to customer.
+    app.post("/clients/:no/address", [oauth], (req, res) => {
+        console.log("####--- In Address Route JS ---###",req,addresses);
+        if(!req.body.address ||
         !req.body.city ||
         !req.body.postal ||
         !req.body.province) {
@@ -48,16 +49,51 @@ module.exports = function(app, oauth) {
                     "error": "Client not found"
                   });
                 } else {
-                  address.create({
-                    idClient: req.params.no,
-                    address: addressComponents.street_number + " " + addressComponents.route,
-                    city: addressComponents.locality,
-                    postal: addressComponents.postal_code,
-                    province: addressComponents.administrative_area_level_1,
-                    distance: Number(going) + Number(returning)
-                  }).then(newAddress => {
-                    res.json(newAddress);
-                  });
+
+                    var addressComponents = isValid.formatAddressComponents(r_address.address_components);
+                    //Calculate distance with google map.
+                    var twoAddress = "7628 Flewellyn Rd Stittsville, ON, K2S 1B6|" + r_address.formatLong();
+                    var url = "https://maps.googleapis.com/maps/api/distancematrix/json?key=" + process.env.GOOGLE_MAP_TOKEN +
+                    '&' + qs.stringify({
+                        origins: twoAddress,
+                        destinations: twoAddress
+                    });
+                    request.custom("GET", url, {}, {}, distance => {
+                        var going = 0;
+                        var returning = 0;
+                        if(distance.rows && distance.rows.length == 2 && distance.rows[0].elements && distance.rows[0].elements[1].status == "OK") {
+                            going = distance.rows[0].elements[1].distance.value;
+                            returning = distance.rows[1].elements[0].distance.value;
+                        }
+                        //Verify customer exist.
+                        client.findById(req.params.no).then(customer => {
+                            if(!customer) {
+                                res.json({"error":"Client not found"});
+                            } else {
+                    async.each(req.body.addresses, (address, next) => {
+                         address.create({
+                                    idClient: req.params.no,
+                                    address: addressComponents.street_number + " " + addressComponents.route,
+                                    city: addressComponents.locality,
+                                    postal: addressComponents.postal_code,
+                                    province: addressComponents.administrative_area_level_1,
+                                    distance: Number(going) + Number(returning)
+                            }).then(newAddress => {
+                                    res.json(newAddress);
+                                });
+                        }, function() {
+                            client.findById(req.params.no, {
+                                include: [{
+                                    model: address, as: "addresses"
+                                }]
+                            }).then(client => {
+                                res.json(addresses);
+                            });
+                        });
+                            }
+                        });
+                    });
+
                 }
               });
             });

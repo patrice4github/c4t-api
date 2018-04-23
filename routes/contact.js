@@ -16,13 +16,12 @@ module.exports = function(app, oauth) {
                 res.json({"error":"Client not found or not a business."});
             } else {
                 // Empty contacts list.
-                Contact.destroy({
-                    where: {
-                        idBusiness: req.params.no
-                    }
-                }).then(r_ => {
+   
                     if(req.body.contacts == undefined) {
-                        res.json([]);
+                        res.status(400);
+                        hasError = true;
+                        res.json({"error":"Contact Can not be deleted"});
+                        return false;
                     } else {
                         // Validate data body.
                         var hasError = false;
@@ -41,6 +40,8 @@ module.exports = function(app, oauth) {
                         }
                         // Add updated list.
                         async.each(req.body.contacts, (contact, next) => {
+                            
+                            if(contact.idContact==''){
                             Contact.create({
                                 idBusiness: req.params.no,
                                 firstName: contact.firstName,
@@ -49,6 +50,21 @@ module.exports = function(app, oauth) {
                             }).then(r_ => {
                                 next();
                             });
+                        }else{
+                             Contact.update({
+                                    idContact: contact.idContact,
+                                    idBusiness: req.params.no,
+                                    firstName: contact.firstName,
+                                    lastName: contact.lastName,
+                                    paymentMethod: contact.paymentMethod
+                            },{
+                                where: {
+                                    idContact: contact.idContact
+                                }
+                            }).then(r_ => {
+                                next();
+                            });
+                            }
                         }, function() {
                             Business.findById(req.params.no, {
                                 include: [{
@@ -59,7 +75,7 @@ module.exports = function(app, oauth) {
                             });
                         });
                     }
-                });
+              
             }
         });
     })
