@@ -107,6 +107,16 @@ var quotes = db.define('quotes', {
         allowNull: false,
         defaultValue: 0
     },
+    freeDistance: {
+        type: sequelize.DECIMAL,
+        allowNull: false,
+        defaultValue: 0
+    },
+    excessCost: {
+        type: sequelize.DECIMAL,
+        allowNull: false,
+        defaultValue: 0
+    },
     pickup: {
         type: sequelize.DECIMAL,
         allowNull: false,

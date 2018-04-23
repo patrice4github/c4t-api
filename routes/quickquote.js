@@ -16,11 +16,65 @@ const asyncMiddleware = fn =>
       .catch(next);
 };
 
-const findAddress = asyncMiddleware(async(client, car) => {
-});
-
 module.exports = function(app, oauth) {
 
+  function updateCarForAddress(car, client, next) {
+
+    // If the addressId is an int, it's an addressId, else it's a postal
+    var addressId = parseInt(car.carAddressId);
+
+    if (!isNaN(addressId)) {
+      // It's a number
+      updateQuoteCar(car, addressId, next);
+
+    } else {
+      console.log("Creating a new address with postal: " + car.carPostal);
+      console.log("                                s : " + car.carStreet);
+      console.log("                                c : " + car.carCity);
+      console.log("                                p : " + car.carProvince);
+      console.log("                                d : " + car.distance);
+      console.log("                              cid : " + client.id);
+      // We can create a new address
+      Address.create(
+        {
+          idClient: client.id,
+          address:  car.carStreet,
+          city:     car.carCity,
+          postal:   car.carPostal,
+          province: car.carProvince,
+          distance: car.distance
+
+      }).then((created) => {
+        console.log("Creating a new address with id    : " + created.id);
+        updateQuoteCar(car, created.id, next);
+      });
+    }
+  }
+
+  // The update of a quote car
+  function updateQuoteCar(car, addressId, next) {
+
+    QuoteCar.update(
+      {
+        idAddress: parseInt(addressId),
+        missingWheels: car.missingWheels ? parseInt(car.missingWheels) : 0,
+        missingBattery: (car.missingBattery && car.missingBattery == 1),
+        missingCat: (car.missingCat && car.missingCat == 1),
+        gettingMethod: car.gettingMethod,
+        distance: (car.distance ? parseFloat(car.distance) : null),
+      },
+      {
+        where: {id: car.car}
+      }
+    ).spread((affectedCount, affectedRows) => {
+      next();
+    });
+  }
+
+  function respond400Message(res, msg) {
+    res.status(400);
+    res.json({"error": msg});
+  }
   // The save a of a quote
   app.post("/quickquotes", [oauth], asyncMiddleware(async (req, res) => {
 
@@ -32,7 +86,7 @@ module.exports = function(app, oauth) {
         req.body.phone == null) {
         res.status(400);
         res.json({
-          "error": "Please send all require attributes."
+          "error": "Please send all required customer attributes."
         });
       } else {
         req.body.postal = Validate.postal(req.body.postal);
@@ -115,96 +169,33 @@ module.exports = function(app, oauth) {
                   }
                 }, (created, quote) => {
 
-                  // Address.findOrCreate({
-                  //   defaults: {
-                  //     idClient: client.id,
-                  //     address: "",
-                  //     city: "",
-                  //     postal: req.body.postal,
-                  //     province: "",
-                  //     distance: 0
-                  //   },
-                  //   where: {
-                  //     idClient: client.id,
-                  //     postal: req.body.postal
-                  //   }
-                  // }).spread((address, created) => {
+                  // Save each car
+                  async.each(carList, (car, next) => {
 
-                    async.each(carList, (car, next) => {
-                      // console.log("2--------- car: " + car)
-                      // var address = findAddress(client, car);
-                      // console.log("6--------- address id: " + address.id)
+                    if (car.car == "")
+                      respond400Message(res, "The type of vehicle was not selected");
+                    else if (car.missingWheels == "")
+                      respond400Message(res, "The missing wheels was not selected");
+                    else if (car.missingBattery == "")
+                      respond400Message(res, "The missing battery was not selected: [" + car.missingBattery + "]");
+                    else if (car.addressId == "" && car.carPostal == "")
+                      respond400Message(res, "The address was not selected properly");
 
-                      // Talk about code duplication which I can't remove...
-                      if (car.carAddressId && car.carAddressId != "0") {
-                          // ALERT: code duplication
-                          QuoteCar.update(
-                            {
-                              idAddress: parseInt(car.carAddressId),
-                              missingWheels: car.missingWheels ? parseInt(car.missingWheels) : 0,
-                              missingBattery: (car.missingBattery && car.missingBattery == 1),
-                              missingCat: (car.missingCat && car.missingCat == 1),
-                              gettingMethod: car.gettingMethod,
-                              flatBedTruckRequired: false  // Not needed yet
-                            },
-                            {
-                              where: {id: car.car}
-                            }
-                          ).spread((affectedCount, affectedRows) => {
-                            next();
-                          });
-                      } else if (car.carAddressId && car.carAddressId == "0" && car.carPostal){
-                        Address.findOrCreate({
-                          defaults: {
-                            idClient: client.id,
-                            address: "",
-                            city: "",
-                            postal: car.carPostal,
-                            province: "",
-                            distance: 0
-                          },
-                          where: {
-                            idClient: client.id,
-                            postal: car.carPostal
-                          }
-                        }).spread((address, created) => {
-                          // ALERT: code duplication
-                          QuoteCar.update(
-                            {
-                              idAddress: address.id,
-                              missingWheels: car.missingWheels ? parseInt(car.missingWheels) : 0,
-                              missingBattery: (car.missingBattery && car.missingBattery == 1),
-                              missingCat: (car.missingCat && car.missingCat == 1),
-                              gettingMethod: car.gettingMethod,
-                              flatBedTruckRequired: false  // Not needed yet
-                            },
-                            {
-                              where: {id: car.car}
-                            }
-                          ).spread((affectedCount, affectedRows) => {
-                            next();
-                          });
-                        });
+                    updateCarForAddress(car, client, next);
 
-                      } else {
-                        console.log("Neither carAddressId nor addressPostal can be found");
-                        next();
-                      }
-
-                    }, function() {
-                      Quote.findById(quote.id, {
-                        include: [{
-                          model: QuoteCar,
-                          as: "cars"
-                        }, {
-                          model: Client,
-                          as: "customer"
-                        }]
-                      }).then(r_quote => {
-                        res.json(r_quote);
-                      });
+                  }, function() {
+                    Quote.findById(quote.id, {
+                      include: [{
+                        model: QuoteCar,
+                        as: "cars"
+                      }, {
+                        model: Client,
+                        as: "customer"
+                      }]
+                    }).then(r_quote => {
+                      res.json(r_quote);
                     });
-                  // });
+                  });
                 });
               });
             });

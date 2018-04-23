@@ -47,6 +47,8 @@ module.exports = function(app, oauth) {
           wheelPrice: s.wheelPrice,
           catPrice: s.catalysorPrice,
           batteryPrice: s.batteryPrice,
+          excessPrice: s.excessPrice,
+          freeDistance: s.freeDistance,
           pickup: s.pickup
         }).then((quote) => {
           res.json(quote);
@@ -55,7 +57,7 @@ module.exports = function(app, oauth) {
     });
   });
 
-  // Creates a blank quote ca
+  // Creates a blank quote car
   app.post('/create-car', [oauth], (req, res) => {
     console.log("=================>")
     console.log(req.body)
@@ -63,10 +65,9 @@ module.exports = function(app, oauth) {
       idQuote: req.body.quote,
       idCar: req.body.veh,
       missingWheels: 0,
-      missingBattery: false,
-      missingCat: false,
+      missingBattery: null,
+      missingCat: null,
       gettingMethod: "pickup",
-      flatBedTruckRequired: false  // Not needed yet
     }).then(car => {
       res.json(car);
     });

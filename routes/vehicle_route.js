@@ -132,48 +132,4 @@ module.exports = function(app, oauth) {
         });
     })
 
-    //Returned all cars.
-    .get('/quotes/cars', [oauth], (req, res) => {
-        cars.findAll({
-            include: [{
-                model: vehiclesinfo, as: 'information'
-            }, {
-                model: address, as: 'address'
-            }, {
-                model: quote, as: 'quote',
-                include: [{
-                    model: client, as: 'customer'
-                }, {
-                    model: users, as: 'dispatcher'
-                }, {
-                    model: status, as: 'status'
-                }]
-            }]
-        }).then(lst => {
-            res.json(lst);
-        });
-    })
-
-    .get('/quotes/cars/:quoteNo', [oauth], (req, res) => {
-        cars.findAll({
-            where: {
-                idQuote: req.params.quoteNo
-            },
-            include: [{
-                model: vehiclesinfo, as: 'information'
-            }, {
-                model: address, as: 'address'
-            }, {
-                model: quote, as: 'quote',
-                include: [{
-                    model: client, as: 'customer'
-                }, {
-                    model: users, as: 'dispatcher'
-                }, {
-                    model: status, as: 'status'
-                }]
-        }]}).then(cars => {
-            res.json(cars);
-        });
-    })
 };

@@ -48,11 +48,11 @@ var cars = db.define('quotecar', {
     },
     missingBattery: {
         type: sequelize.BOOLEAN,
-        allowNull: false
+        allowNull: true
     },
     missingCat: {
         type: sequelize.BOOLEAN,
-        allowNull: false
+        allowNull: true
     },
     donation: {
         type: sequelize.STRING,
@@ -62,9 +62,9 @@ var cars = db.define('quotecar', {
         type: sequelize.STRING,
         allowNull: false
     },
-    flatBedTruckRequired: {
+    isTowable: {
         type: sequelize.BOOLEAN,
-        allowNull: false
+        allowNull: true
     },
     gotKeys: {
         type: sequelize.BOOLEAN,
@@ -113,6 +113,10 @@ var cars = db.define('quotecar', {
     cashRegular: {
         type: sequelize.INTEGER(11),
         allowNull: true
+    },
+    distance: {
+        type: sequelize.DECIMAL,
+        allowNull: true,
     },
     dateBooked: {
         type: sequelize.DATE,
