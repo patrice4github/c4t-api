@@ -59,8 +59,6 @@ module.exports = function(app, oauth) {
 
   // Creates a blank quote car
   app.post('/create-car', [oauth], (req, res) => {
-    console.log("=================>")
-    console.log(req.body)
     cars.create({
       idQuote: req.body.quote,
       idCar: req.body.veh,
@@ -84,125 +82,15 @@ module.exports = function(app, oauth) {
     });
   });
 
-  // Retrives a quote car
+  // Retrieves a quote car
   app.get('/quotecar/:carNo', [oauth], (req, res) => {
     cars.findById(req.params.carNo).then(car => {
       res.json(car);
     });
   });
 
-  // Saves the booking
-  app.post('/booking', [oauth], (req, res) => {
-    Object.keys(req.body).forEach(function(key) {
-      // Find the car params, then the car ids
-      // Use the vin to identify the quoteCar.idQuoteCars
-      // The param is will look like: vin-123
-      if (key.startsWith('vin')) {
-        // We have found a car id!
-        var qcid = key.split('-')[1];
-        date = (req.body["dateBooked-" + qcid] == '' ? null : req.body["dateBooked-" + qcid]);
-        cash = (req.body["cashRegular-" + qcid] == '' ? null : req.body["cashRegular-" + qcid]);
-        comp = (req.body["complete-" + qcid] == null ? null : (req.body["complete-" + qcid] == '1'));
-        runn = (req.body["running-" + qcid] == null ? null : (req.body["running-" + qcid] == '1'));
-        own = (req.body["ownership-" + qcid] == null ? null : (req.body["ownership-" + qcid] == '1'));
-        keys = (req.body["gotKeys-" + qcid] == null ? null : (req.body["gotKeys-" + qcid] == '1'));
-        cars.update({
-          gotKeys: keys,
-          drivetrain: req.body["drivetrain-" + qcid],
-          tiresCondition: req.body["tiresCondition-" + qcid],
-          ownership: own,
-          running: runn,
-          complete: comp,
-          color: req.body["color-" + qcid],
-          receipt: req.body["receipt-" + qcid],
-          vin: req.body["vin-" + qcid],
-          ownershipName: req.body["ownershipName-" + qcid],
-          ownershipAddress: req.body["ownershipAddress-" + qcid],
-          cashRegular: cash,
-          timeBooked: req.body["timeBooked-" + qcid],
-          dateBooked: date,
-          carNotes: req.body["carNotes-" + qcid],
-          driverNotes: req.body["driverNotes-" + qcid]
-        }, {
-          where: {
-            idQuoteCars: qcid
-          }
-        });
-      }
-    });
-
-    res.json({
-      "message": "Booking saved"
-    });
-  })
-
-  // //Update a quote recently added
-  // app.post('/quotes/:no', [oauth], (req, res) => {
-  //     //Validate body data before insert.
-  //     if (!req.body.noClient ||
-  //       !req.body.cars ||
-  //       req.body.note == null) {
-  //       res.json({
-  //         "error": "please send all require attributes."
-  //       });
-  //     } else {
-  //       quotes.update({
-  //         idUser: req.user.idUser,
-  //         idClient: req.body.noClient,
-  //         note: req.body.note
-  //       }, {
-  //         where: {
-  //           id: req.params.no
-  //         }
-  //       }).then((quote) => {
-  //         //Empty cars from quote.
-  //         cars.destroy({
-  //           where: {
-  //             idQuote: req.params.no
-  //           }
-  //         }).then(() => {
-  //           // Add cars to quote.
-  //           async.each(req.body.cars, function(car, next) {
-  //             var gettingMethod = (typeof car.dropoff == 'undefined' ? "pickup" : "dropoff");
-  //             if (!car.idAddress) {
-  //               clients.findById(req.body.noClient).then(client => {
-  //                 car.idAddress = client.idAddress;
-  //                 cars.create({
-  //                   idQuote: req.params.no,
-  //                   idCar: car.id,
-  //                   idAddress: car.idAddress,
-  //                   donation: car.donation,
-  //                   gettingMethod: gettingMethod,
-  //                   flatBedTruckRequired: car.flatBedTruckRequired
-  //                 }).then((temp) => {
-  //                   next();
-  //                 });
-  //               });
-  //             } else {
-  //               cars.create({
-  //                 idQuote: req.params.no,
-  //                 idCar: car.id,
-  //                 idAddress: car.idAddress,
-  //                 donation: car.donation,
-  //                 gettingMethod: gettingMethod,
-  //                 flatBedTruckRequired: car.flatBedTruckRequired
-  //               }).then((temp) => {
-  //                 next();
-  //               });
-  //             }
-  //
-  //           }, function() {
-  //             quotes.findById(req.params.no).then(newOne => {
-  //               res.json(newOne);
-  //             });
-  //           });
-  //         });
-  //       });
-  //     }
-  //   })
-
     // get all quotes with filter.
-    .get("/quotes", [oauth], (req, res) => {
+  app.get("/quotes", [oauth], (req, res) => {
       var limit = 1000;
       var offset = 0;
       var where = {

@@ -18,22 +18,17 @@ const asyncMiddleware = fn =>
 
 module.exports = function(app, oauth) {
 
+  // Update a car
+  // The addressId comes for the select2, perhaps an addressId
+  // or a typed in postal code
   function updateCarForAddress(car, client, next) {
-
     // If the addressId is an int, it's an addressId, else it's a postal
     var addressId = parseInt(car.carAddressId);
 
     if (!isNaN(addressId)) {
       // It's a number
       updateQuoteCar(car, addressId, next);
-
     } else {
-      console.log("Creating a new address with postal: " + car.carPostal);
-      console.log("                                s : " + car.carStreet);
-      console.log("                                c : " + car.carCity);
-      console.log("                                p : " + car.carProvince);
-      console.log("                                d : " + car.distance);
-      console.log("                              cid : " + client.id);
       // We can create a new address
       Address.create(
         {
@@ -75,6 +70,7 @@ module.exports = function(app, oauth) {
     res.status(400);
     res.json({"error": msg});
   }
+
   // The save a of a quote
   app.post("/quickquotes", [oauth], asyncMiddleware(async (req, res) => {
 
