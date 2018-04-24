@@ -133,7 +133,15 @@ var cars = db.define('quotecar', {
     driverNotes: {
         type: sequelize.STRING,
         allowNull: true
-    }
+    },
+    canDo2wd: {
+        type: sequelize.BOOLEAN,
+        allowNull: true
+    },
+    canGoNeutral: {
+        type: sequelize.BOOLEAN,
+        allowNull: true
+    },
 }, {
     tableName: 'QuotesCars',
     timestamps: false
