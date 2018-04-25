@@ -31,7 +31,7 @@ require('./routes/address_route')(app, oauth);
 require('./routes/contact_api')(app, oauth);
 require('./routes/customer_route')(app, oauth);
 require('./routes/vehicle_route')(app, oauth);
-require('./routes/quote_route')(app, oauth);
+require('./routes/quote_api')(app, oauth);
 require('./routes/quotecars_route')(app, oauth);
 require('./routes/quickquote')(app, oauth);
 require('./routes/schedule_api')(app, oauth);

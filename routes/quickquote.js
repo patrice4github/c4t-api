@@ -118,12 +118,14 @@ module.exports = function(app, oauth) {
             "error": "The cars cannot be parsed"
           });
         }
-        if (carList == undefined || carList.length == 0 || !carList[0].gettingMethod) {
-          res.status(400);
-          res.json({
-            "error": "List of cars is empty. Cannot save quote."
-          });
-        } else {
+        
+        // if (carList == undefined || carList.length == 0 || !carList[0].gettingMethod) {
+        //   res.status(400);
+        //   res.json({
+        //     "error": "List of cars is empty. Cannot save quote."
+        //   });
+        // } else
+        {
           // Find or create heardOfUs.
           HeardOfUs.findOrCreate({
             where: {

@@ -47,7 +47,7 @@ module.exports = function(app, oauth) {
           wheelPrice: s.wheelPrice,
           catPrice: s.catalysorPrice,
           batteryPrice: s.batteryPrice,
-          excessPrice: s.excessPrice,
+          excessCost: s.excessPrice,
           freeDistance: s.freeDistance,
           pickup: s.pickup
         }).then((quote) => {

@@ -114,10 +114,6 @@ var cars = db.define('quotecar', {
         type: sequelize.INTEGER(11),
         allowNull: true
     },
-    distance: {
-        type: sequelize.DECIMAL,
-        allowNull: true,
-    },
     dateBooked: {
         type: sequelize.DATE,
         allowNull: true
@@ -142,6 +138,15 @@ var cars = db.define('quotecar', {
         type: sequelize.BOOLEAN,
         allowNull: true
     },
+    distance: {
+        type: sequelize.DECIMAL,
+        allowNull: true,
+    },
+    price: {
+        type: sequelize.DECIMAL,
+        allowNull: true,
+    },
+
 }, {
     tableName: 'QuotesCars',
     timestamps: false
