@@ -57,6 +57,7 @@ module.exports = function(app, oauth) {
         missingCat: (car.missingCat && car.missingCat == 1),
         gettingMethod: car.gettingMethod,
         distance: (car.distance ? parseFloat(car.distance) : null),
+        price: (car.price ? parseFloat(car.price) : null)
       },
       {
         where: {id: car.car}
@@ -118,7 +119,7 @@ module.exports = function(app, oauth) {
             "error": "The cars cannot be parsed"
           });
         }
-        
+
         // if (carList == undefined || carList.length == 0 || !carList[0].gettingMethod) {
         //   res.status(400);
         //   res.json({
