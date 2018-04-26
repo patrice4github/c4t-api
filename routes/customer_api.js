@@ -18,8 +18,6 @@ module.exports = function(app, oauth) {
 
     //Create a customer
     app.post('/clients', [oauth], (req, res) => {
-        //Validate body data before insert.
-        console.log("### About to Save Client");
         if(!req.body.firstName ||
            req.body.lastName == null ||
            req.body.email == null ||
@@ -32,19 +30,21 @@ module.exports = function(app, oauth) {
            req.body.grade == null ||
            req.body.note == null ||
            !req.body.heardOfUs) {
-            res.json({"error":"Please send all require attributes."});
+            res.json({"error":"Please fill all required attributes."});
         } else if(req.body.type != "Individual" &&
                   (!req.body.name ||
                    req.body.description == null ||
                    !req.body.contactPosition ||
                    !req.body.pstTaxNo ||
                    !req.body.gstTaxNo)) {
-            res.json({"error":"please send all require attributes."});
+            res.json({"error":"please fill all required attributes."});
         } else {
             // Verify address.
             // isValid.address(req.body.address + " " + req.body.city + ", " + req.body.province, r_address => {
             // Not working with Patrice's
             //var addressComponents = isValid.formatAddressComponents(r_address.address_components);
+
+/*
             var formatted_address = req.body.address + " " + req.body.city + ", " + req.body.province.toUpperCase() + ", " + req.body.postal;
 
             // Calculate distance with google map.
@@ -55,6 +55,7 @@ module.exports = function(app, oauth) {
                 destinations: twoAddress
             });
             request.custom("GET", url, {}, {}, distance => {
+            */
                 var customDollarCar = 0;
                 var customDollarSteel = 0;
                 var customPercCar = 0;
@@ -140,7 +141,7 @@ module.exports = function(app, oauth) {
                         }
                     });
                   });
-            });
+//            });
         }
     })
 
@@ -341,7 +342,7 @@ module.exports = function(app, oauth) {
                         req.body.type = clientNote.type + "<br>" + req.body.type.replace(clientNote.type, "");;
                     }
 
-                    
+
 
                     var formatted_address = req.body.address + " " + req.body.city + ", " + req.body.province.toUpperCase() + ", " + req.body.postal;
                     console.log("formatted_address:---------",formatted_address);
@@ -398,7 +399,7 @@ module.exports = function(app, oauth) {
                             {
                                 where: {id: req.params.no }
                             }).then((client) => {
-                                
+
                         var hasError = false;
                         req.body.addresses.forEach(address => {
                             if(!hasError &&
@@ -414,7 +415,7 @@ module.exports = function(app, oauth) {
                         if(hasError) {
                             return;
                         }
-                            
+
                         async.each(req.body.addresses, (address, next) => {
                             if(address.idAddress==''){
                                 Address.upsert({
@@ -427,7 +428,7 @@ module.exports = function(app, oauth) {
                                     // city: addressComponents.locality,
                                     // postal: addressComponents.postal_code,
                                     // province: addressComponents.administrative_area_level_1,
-                                
+
                                    distance: Number(distance.rows[0].elements[1].distance.value) + Number(distance.rows[1].elements[0].distance.value)
                             },{
                                     where: {

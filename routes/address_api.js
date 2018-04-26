@@ -3,6 +3,7 @@ var router = express.Router();
 var isValid = require('../tools/validate');
 var client = require('../models/customer');
 var address = require('../models/address');
+var cars = require('../models/quotecar');
 var db = require('../tools/db');
 const Op = db.Op;
 var request = require("../tools/request");
@@ -226,9 +227,45 @@ module.exports = function(app, oauth) {
     //Get distance and additionnal price for go to an address
     .get("/address/:no", [oauth], (req, res) => {
       address.findById(req.params.no).then(address => {
-        console.log("====================> address route");
-        console.log("====================> " + address);
         res.json(address);
       });
-    });
+    })
+
+    .post("/address-remove", [oauth], (req, res) => {
+      console.log("====================> address id: " + req.body.addressId);
+      cars.count({
+        where: {
+          idAddress: req.body.addressId
+        }
+      }).then(count => {
+        if (count > 0) {
+          console.log("====================> addresses: " + count);
+          res.json({"error": "There are quotes associated with this address, it cannot be deleted"});
+        } else {
+          console.log("====================> no quote car");
+          address.destroy({
+              where: {
+                  idAddress: req.body.addressId
+              }
+          }).then((results) => {
+            res.json({"message": "Address deleted"});
+          });
+        }
+      });
+    })
+
+    // Create a blank address
+    .post("/address-create", [oauth], (req, res) => {
+      address.create({
+        idClient: req.body.clientId,
+        address: "",
+        city: "",
+        province: "",
+        postal: "",
+        distance: ""
+      }).then(address => {
+        res.json(address);
+      });
+    })
+
 }

@@ -18,6 +18,7 @@ var oauth = require('./tools/authentification');
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
+require('./routes/address_api')(app, oauth);
 require('./routes/booking_api')(app, oauth);
 require('./routes/distance_api')(app, oauth);
 require('./routes/login_route')(app, oauth);
@@ -27,9 +28,8 @@ require('./routes/user_route')(app, oauth);
 require('./routes/setting_route')(app, oauth);
 require('./routes/charity_api')(app, oauth);
 require('./routes/heardofus_api')(app, oauth);
-require('./routes/address_route')(app, oauth);
 require('./routes/contact_api')(app, oauth);
-require('./routes/customer_route')(app, oauth);
+require('./routes/customer_api')(app, oauth);
 require('./routes/vehicle_route')(app, oauth);
 require('./routes/quote_api')(app, oauth);
 require('./routes/quotecars_api')(app, oauth);
