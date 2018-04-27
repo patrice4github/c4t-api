@@ -25,7 +25,6 @@ require('./routes/login_route')(app, oauth);
 require('./routes/sms_route')(app, oauth);
 require('./routes/voice_route')(app, oauth);
 require('./routes/user_route')(app, oauth);
-require('./routes/setting_route')(app, oauth);
 require('./routes/charity_api')(app, oauth);
 require('./routes/heardofus_api')(app, oauth);
 require('./routes/contact_api')(app, oauth);
@@ -34,6 +33,7 @@ require('./routes/vehicle_route')(app, oauth);
 require('./routes/quote_api')(app, oauth);
 require('./routes/quotecars_api')(app, oauth);
 require('./routes/quickquote')(app, oauth);
+require('./routes/setting_api')(app, oauth);
 require('./routes/schedule_api')(app, oauth);
 
 // starts the app
