@@ -25,6 +25,10 @@ const settings = db.define('settings', {
     type: sequelize.STRING,
     allowNull: false
   },
+  grade: {
+    type: sequelize.STRING,
+    allowNull: true
+  },
   dtCreated: {
     type: sequelize.DATE,
     allowNull: false,

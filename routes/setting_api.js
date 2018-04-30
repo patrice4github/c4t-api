@@ -39,20 +39,29 @@ module.exports = function(app, oauth) {
         if(req.user.roles != 'admin') {
             res.json({"error":"You are not an admin."});
         } else {
+            var j = 0;
+            var l = req.body.settings.length;
             async.each(req.body.settings, function(setting, next) {
-                settings.create({
+              settings.update(
+                {
+                  name: setting.name,
+                  label: setting.name,
+                  value: setting.value,
+                  grade: setting.grade
+                }, {
+                  where: {
                     name: setting.name,
-                    label: setting.label,
-                    value: setting.value
-                }).then((updated) => {
-                    if(!updated) {
-                        res.json({"error":"An error occur on update a setting"});
-                    } else {
-                        next();
-                    }
-                });
-            },function(){
-                res.json({"message":"Settings is updated."});
+                    grade: setting.grade
+                  }
+
+                })
+              .then((updated)=> {
+                j += 1;
+                if (j >= l) {
+                  res.json({"message":"Settings is updated."});
+                }
+              });
+            },function() {
             });
         }
     });
