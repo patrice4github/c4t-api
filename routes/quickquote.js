@@ -27,8 +27,13 @@ module.exports = function(app, oauth) {
 
     if (!isNaN(addressId)) {
       // It's a number
-      updateQuoteCar(car, addressId, next);
-    } else {
+      updateQuoteCar(car, parseInt(addressId), next);
+
+    } else if (!car.carPostal) {
+      // No address at this time
+      updateQuoteCar(car, null, next);
+
+    } else if (car.carPostal && car.carPostal != "") {
       // We can create a new address
       Address.create(
         {
@@ -49,9 +54,11 @@ module.exports = function(app, oauth) {
   // The update of a quote car
   function updateQuoteCar(car, addressId, next) {
 
+    console.log("==================> QuoteCar.update    : " + JSON.stringify(car));
+    console.log("==================> QuoteCar.update    : " + parseInt(car.car));
     QuoteCar.update(
       {
-        idAddress: parseInt(addressId),
+        idAddress: addressId,
         missingWheels: car.missingWheels ? parseInt(car.missingWheels) : 0,
         missingBattery: (car.missingBattery && car.missingBattery == 1),
         missingCat: (car.missingCat && car.missingCat == 1),
@@ -120,12 +127,6 @@ module.exports = function(app, oauth) {
           });
         }
 
-        // if (carList == undefined || carList.length == 0 || !carList[0].gettingMethod) {
-        //   res.status(400);
-        //   res.json({
-        //     "error": "List of cars is empty. Cannot save quote."
-        //   });
-        // } else
         {
           // Find or create heardOfUs.
           HeardOfUs.findOrCreate({

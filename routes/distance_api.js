@@ -10,9 +10,11 @@ module.exports = function(app, oauth) {
         origins: origin,
         destinations: destination
     });
-    request.custom("GET", url, {}, {}, distance => {
-      res.json(distance);
-    });
+    // request.custom("GET", url, {}, {}, distance => {
+    //   res.json(distance);
+    // });
+
+    
   }
 
   // Calculate distance with google api to the yard
