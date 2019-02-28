@@ -50,7 +50,7 @@ const vehiclesinfo = db.define('vehiclesinfo', {
         allowNull: false
     }
 }, {
-    tableName: 'VehiculesInfo',
+    tableName: 'vehicle_infos',
     timestamps: false
 });
 

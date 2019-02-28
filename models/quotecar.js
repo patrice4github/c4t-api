@@ -148,7 +148,7 @@ var cars = db.define('quotecar', {
     },
 
 }, {
-    tableName: 'QuotesCars',
+    tableName: 'quote_Cars',
     timestamps: false
 });
 
